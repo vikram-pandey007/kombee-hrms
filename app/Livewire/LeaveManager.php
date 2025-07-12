@@ -8,6 +8,9 @@ use Livewire\Component;
 
 class LeaveManager extends Component
 {
+    public $selectedLeave = null;
+    public $showViewModal = false;
+
     #[On('approve-leave')]
     public function approve($id)
     {
@@ -16,7 +19,7 @@ class LeaveManager extends Component
             $leave->update(['status' => 'Approved']);
             session()->flash('message', 'Leave request has been approved.');
 
-            // **THE FIX:** The event name must match the table's unique name.
+            // Refresh the table
             $this->dispatch('pg:eventRefresh-leave-table');
         }
     }
@@ -29,9 +32,22 @@ class LeaveManager extends Component
             $leave->update(['status' => 'Rejected']);
             session()->flash('message', 'Leave request has been rejected.');
 
-            // **THE FIX:** The event name must match the table's unique name.
+            // Refresh the table
             $this->dispatch('pg:eventRefresh-leave-table');
         }
+    }
+
+    #[On('view-leave')]
+    public function view($id)
+    {
+        $this->selectedLeave = Leave::with('employee')->find($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->selectedLeave = null;
     }
 
     public function render()

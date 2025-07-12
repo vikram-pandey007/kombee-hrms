@@ -18,8 +18,6 @@ final class LeaveTable extends PowerGridComponent
     public function mount(): void
     {
         parent::mount();
-        // Force refresh on mount
-        $this->refresh();
     }
 
     public function setUp(): array
@@ -40,6 +38,7 @@ final class LeaveTable extends PowerGridComponent
     public function fields(): PowerGridFields
     {
         return PowerGrid::fields()
+            ->add('id')
             ->add('employee_name')
             ->add('leave_type')
             ->add('start_date_formatted', fn(Leave $model) => Carbon::parse($model->start_date)->format('M d, Y'))
@@ -51,13 +50,14 @@ final class LeaveTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Employee', 'employee_name', 'employees.name')->sortable()->searchable(),
+            Column::make('ID', 'id')->sortable(),
+            Column::make('Employee', 'employee_name')->sortable()->searchable(),
             Column::make('Type', 'leave_type')->sortable(),
-            Column::make('Start Date', 'start_date_formatted', 'start_date')->sortable(),
-            Column::make('End Date', 'end_date_formatted', 'end_date')->sortable(),
+            Column::make('Start Date', 'start_date_formatted')->sortable(),
+            Column::make('End Date', 'end_date_formatted')->sortable(),
             Column::make('Days', 'duration_in_days'),
             Column::make('Status', 'status')->sortable(),
-            Column::action('Action')
+            Column::action('Actions')
         ];
     }
 
@@ -65,36 +65,37 @@ final class LeaveTable extends PowerGridComponent
     {
         $actions = [];
 
+        // Always show view button
+        $actions[] = Button::add('view')
+            ->slot('View')
+            ->id()
+            ->class('px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm mr-1')
+            ->dispatch('view-leave', ['id' => $row->id]);
+
+        // Show approve/reject buttons for pending leaves
         if ($row->status === 'Pending') {
             $actions[] = Button::add('approve')
                 ->slot('Approve')
                 ->id()
-                ->class('px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm')
-                ->dispatch('approve-leave', ['id' => $row->id])
-                ->attributes(['data-testid' => 'leave-row-action-approve']);
+                ->class('px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm mr-1')
+                ->dispatch('approve-leave', ['id' => $row->id]);
 
             $actions[] = Button::add('reject')
                 ->slot('Reject')
                 ->id()
                 ->class('px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm')
-                ->dispatch('reject-leave', ['id' => $row->id])
-                ->attributes(['data-testid' => 'leave-row-action-reject']);
+                ->dispatch('reject-leave', ['id' => $row->id]);
         } else {
             // Show status for non-pending leaves
+            $statusClass = $row->status === 'Approved'
+                ? 'px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-md border border-green-200'
+                : 'px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-md border border-red-200';
+
             $actions[] = Button::add('status')
                 ->slot($row->status)
                 ->id()
-                ->class($row->status === 'Approved' ? 'px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-md border border-green-200' : 'px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-md border border-red-200')
-                ->attributes(['data-testid' => 'leave-row-status-' . $row->id]);
+                ->class($statusClass);
         }
-
-        // Always show view button
-        $actions[] = Button::add('view')
-            ->slot('View')
-            ->id()
-            ->class('px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm')
-            ->dispatch('view-leave', ['id' => $row->id])
-            ->attributes(['data-testid' => 'leave-row-action-view']);
 
         return $actions;
     }
