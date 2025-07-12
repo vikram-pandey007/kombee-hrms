@@ -69,23 +69,24 @@
                     </svg>
                 </div>
                 <input type="text" wire:model.live="search" placeholder="Search payroll by employee name..." 
+                       data-testid="payroll-search"
                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-            <select wire:model.live="monthFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select wire:model.live="monthFilter" data-testid="payroll-month-filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Months</option>
                 @foreach($months as $key => $month)
                     <option value="{{ $key }}">{{ $month }}</option>
                 @endforeach
             </select>
-            <select wire:model.live="yearFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select wire:model.live="yearFilter" data-testid="payroll-year-filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Years</option>
                 @foreach($years as $year)
                     <option value="{{ $year }}">{{ $year }}</option>
                 @endforeach
             </select>
-            <select wire:model.live="employeeFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select wire:model.live="employeeFilter" data-testid="payroll-employee-filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Employees</option>
                 @foreach($employees as $employee)
                     <option value="{{ $employee->id }}">{{ $employee->name }}</option>
@@ -152,6 +153,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     <button wire:click="view({{ $payroll->id }})" 
+                                            data-testid="payroll-view-{{ $payroll->id }}"
                                             class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                                             title="View Payslip">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,6 +162,7 @@
                                         </svg>
                                     </button>
                                     <button wire:click="edit({{ $payroll->id }})" 
+                                            data-testid="payroll-edit-{{ $payroll->id }}"
                                             class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                             title="Edit Payroll">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,6 +170,7 @@
                                         </svg>
                                     </button>
                                     <button wire:click="delete({{ $payroll->id }})" 
+                                            data-testid="payroll-delete-{{ $payroll->id }}"
                                             class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                             title="Delete Payroll"
                                             onclick="return confirm('Are you sure you want to delete this payroll record? This action cannot be undone.')">
@@ -347,7 +351,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-3">
                                 @foreach($employees as $employee)
                                     <label class="flex items-center space-x-2">
-                                        <input type="checkbox" wire:model="selected_employees" value="{{ $employee->id }}" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                        <input type="checkbox" wire:model="selected_employees" value="{{ $employee->id }}" data-testid="payroll-employee-checkbox-{{ $employee->id }}" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ $employee->name }} ({{ $employee->employee_id }})</span>
                                     </label>
                                 @endforeach
@@ -358,13 +362,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="bulk_month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
-                                <input type="month" wire:model="bulk_month" id="bulk_month" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_month') border-red-500 @enderror">
+                                <input type="month" wire:model="bulk_month" id="bulk_month" data-testid="payroll-bulk-month-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_month') border-red-500 @enderror">
                                 @error('bulk_month') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="bulk_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model="bulk_status" id="bulk_status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_status') border-red-500 @enderror">
+                                <select wire:model="bulk_status" id="bulk_status" data-testid="payroll-bulk-status-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_status') border-red-500 @enderror">
                                     @foreach($statuses as $status)
                                         <option value="{{ $status }}">{{ $status }}</option>
                                     @endforeach
@@ -386,15 +390,15 @@
                         
                         <div class="mt-4">
                             <label for="bulk_remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Remarks</label>
-                            <textarea wire:model="bulk_remarks" id="bulk_remarks" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
+                            <textarea wire:model="bulk_remarks" id="bulk_remarks" data-testid="payroll-bulk-remarks-input" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('bulk_remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
                             @error('bulk_remarks') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         
                         <div class="flex justify-end mt-6 space-x-3">
-                            <button type="button" wire:click="closeCreateModal" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            <button type="button" wire:click="closeCreateModal" data-testid="payroll-bulk-cancel-button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
                                 Cancel
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                            <button type="submit" wire:loading.attr="disabled" data-testid="payroll-bulk-save-button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
                                 <span wire:loading.remove>Create Payroll</span>
                                 <span wire:loading>Creating...</span>
                             </button>
@@ -423,7 +427,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="edit_employee_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee</label>
-                                <select wire:model="employee_id" id="edit_employee_id" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('employee_id') border-red-500 @enderror">
+                                <select wire:model="employee_id" id="edit_employee_id" data-testid="payroll-edit-employee-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('employee_id') border-red-500 @enderror">
                                     <option value="">Select Employee</option>
                                     @foreach($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->employee_id }})</option>
@@ -434,43 +438,43 @@
                             
                             <div>
                                 <label for="edit_month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
-                                <input type="month" wire:model="month" id="edit_month" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('month') border-red-500 @enderror">
+                                <input type="month" wire:model="month" id="edit_month" data-testid="payroll-edit-month-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('month') border-red-500 @enderror">
                                 @error('month') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_base_salary" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary</label>
-                                <input type="number" step="0.01" wire:model="base_salary" id="edit_base_salary" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('base_salary') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="base_salary" id="edit_base_salary" data-testid="payroll-edit-base-salary-input" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('base_salary') border-red-500 @enderror">
                                 @error('base_salary') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_deductions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total Deductions</label>
-                                <input type="number" step="0.01" wire:model="deductions" id="edit_deductions" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('deductions') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="deductions" id="edit_deductions" data-testid="payroll-edit-deductions-input" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('deductions') border-red-500 @enderror">
                                 @error('deductions') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_leave_deductions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Leave Deductions</label>
-                                <input type="number" step="0.01" wire:model="leave_deductions" id="edit_leave_deductions" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('leave_deductions') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="leave_deductions" id="edit_leave_deductions" data-testid="payroll-edit-leave-deductions-input" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('leave_deductions') border-red-500 @enderror">
                                 @error('leave_deductions') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_other_deductions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Deductions</label>
-                                <input type="number" step="0.01" wire:model="other_deductions" id="edit_other_deductions" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('other_deductions') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="other_deductions" id="edit_other_deductions" data-testid="payroll-edit-other-deductions-input" wire:change="calculateNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('other_deductions') border-red-500 @enderror">
                                 @error('other_deductions') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_net_pay" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Net Pay</label>
-                                <input type="number" step="0.01" wire:model="net_pay" id="edit_net_pay" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('net_pay') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="net_pay" id="edit_net_pay" data-testid="payroll-edit-net-pay-input" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('net_pay') border-red-500 @enderror">
                                 @error('net_pay') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="edit_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model="status" id="edit_status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('status') border-red-500 @enderror">
+                                <select wire:model="status" id="edit_status" data-testid="payroll-edit-status-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('status') border-red-500 @enderror">
                                     @foreach($statuses as $status)
                                         <option value="{{ $status }}">{{ $status }}</option>
                                     @endforeach
@@ -481,21 +485,21 @@
                         
                         <div class="mt-4">
                             <label for="edit_deduction_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deduction Notes</label>
-                            <textarea wire:model="deduction_notes" id="edit_deduction_notes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('deduction_notes') border-red-500 @enderror" placeholder="Optional notes about deductions..."></textarea>
+                            <textarea wire:model="deduction_notes" id="edit_deduction_notes" data-testid="payroll-edit-deduction-notes-input" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('deduction_notes') border-red-500 @enderror" placeholder="Optional notes about deductions..."></textarea>
                             @error('deduction_notes') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         
                         <div class="mt-4">
                             <label for="edit_remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Remarks</label>
-                            <textarea wire:model="remarks" id="edit_remarks" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
+                            <textarea wire:model="remarks" id="edit_remarks" data-testid="payroll-edit-remarks-input" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
                             @error('remarks') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         
                         <div class="flex justify-end mt-6 space-x-3">
-                            <button type="button" wire:click="closeEditModal" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            <button type="button" wire:click="closeEditModal" data-testid="payroll-edit-cancel-button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
                                 Cancel
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                            <button type="submit" wire:loading.attr="disabled" data-testid="payroll-edit-update-button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
                                 <span wire:loading.remove>Update Payroll</span>
                                 <span wire:loading>Updating...</span>
                             </button>
@@ -524,7 +528,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="individual_employee_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee</label>
-                                <select wire:model="individual_employee_id" id="individual_employee_id" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_employee_id') border-red-500 @enderror">
+                                <select wire:model="individual_employee_id" id="individual_employee_id" data-testid="payroll-individual-employee-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_employee_id') border-red-500 @enderror">
                                     <option value="">Select Employee</option>
                                     @foreach($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->employee_id }})</option>
@@ -535,37 +539,37 @@
                             
                             <div>
                                 <label for="individual_month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
-                                <input type="month" wire:model="individual_month" id="individual_month" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_month') border-red-500 @enderror">
+                                <input type="month" wire:model="individual_month" id="individual_month" data-testid="payroll-individual-month-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_month') border-red-500 @enderror">
                                 @error('individual_month') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="individual_base_salary" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary</label>
-                                <input type="number" step="0.01" wire:model="individual_base_salary" id="individual_base_salary" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_base_salary') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="individual_base_salary" id="individual_base_salary" data-testid="payroll-individual-base-salary-input" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_base_salary') border-red-500 @enderror">
                                 @error('individual_base_salary') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="individual_leave_deductions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Leave Deductions</label>
-                                <input type="number" step="0.01" wire:model="individual_leave_deductions" id="individual_leave_deductions" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_leave_deductions') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="individual_leave_deductions" id="individual_leave_deductions" data-testid="payroll-individual-leave-deductions-input" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_leave_deductions') border-red-500 @enderror">
                                 @error('individual_leave_deductions') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="individual_other_deductions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Deductions</label>
-                                <input type="number" step="0.01" wire:model="individual_other_deductions" id="individual_other_deductions" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_other_deductions') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="individual_other_deductions" id="individual_other_deductions" data-testid="payroll-individual-other-deductions-input" wire:change="calculateIndividualNetPay" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_other_deductions') border-red-500 @enderror">
                                 @error('individual_other_deductions') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="individual_net_pay" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Net Pay</label>
-                                <input type="number" step="0.01" wire:model="individual_net_pay" id="individual_net_pay" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('individual_net_pay') border-red-500 @enderror">
+                                <input type="number" step="0.01" wire:model="individual_net_pay" id="individual_net_pay" data-testid="payroll-individual-net-pay-input" readonly class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 sm:text-sm @error('individual_net_pay') border-red-500 @enderror">
                                 @error('individual_net_pay') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label for="individual_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model="individual_status" id="individual_status" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_status') border-red-500 @enderror">
+                                <select wire:model="individual_status" id="individual_status" data-testid="payroll-individual-status-input" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_status') border-red-500 @enderror">
                                     @foreach($statuses as $status)
                                         <option value="{{ $status }}">{{ $status }}</option>
                                     @endforeach
@@ -576,21 +580,21 @@
                         
                         <div class="mt-4">
                             <label for="individual_deduction_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deduction Notes</label>
-                            <textarea wire:model="individual_deduction_notes" id="individual_deduction_notes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_deduction_notes') border-red-500 @enderror" placeholder="Optional notes about deductions..."></textarea>
+                            <textarea wire:model="individual_deduction_notes" id="individual_deduction_notes" data-testid="payroll-individual-deduction-notes-input" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_deduction_notes') border-red-500 @enderror" placeholder="Optional notes about deductions..."></textarea>
                             @error('individual_deduction_notes') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         
                         <div class="mt-4">
                             <label for="individual_remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Remarks</label>
-                            <textarea wire:model="individual_remarks" id="individual_remarks" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
+                            <textarea wire:model="individual_remarks" id="individual_remarks" data-testid="payroll-individual-remarks-input" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('individual_remarks') border-red-500 @enderror" placeholder="Optional remarks..."></textarea>
                             @error('individual_remarks') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                         
                         <div class="flex justify-end mt-6 space-x-3">
-                            <button type="button" wire:click="closeIndividualModal" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            <button type="button" wire:click="closeIndividualModal" data-testid="payroll-individual-cancel-button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
                                 Cancel
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                            <button type="submit" wire:loading.attr="disabled" data-testid="payroll-individual-save-button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
                                 <span wire:loading.remove>Generate Payroll</span>
                                 <span wire:loading>Generating...</span>
                             </button>

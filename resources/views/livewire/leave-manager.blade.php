@@ -51,23 +51,24 @@
                     </svg>
                 </div>
                 <input type="text" wire:model.live="search" placeholder="Search leaves by employee name..." 
+                       data-testid="leave-search"
                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-            <select wire:model.live="statusFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select wire:model.live="statusFilter" data-testid="leave-status-filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Status</option>
                 @foreach($statuses as $status)
                     <option value="{{ $status }}">{{ $status }}</option>
                 @endforeach
             </select>
-            <select wire:model.live="employeeFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select wire:model.live="employeeFilter" data-testid="leave-employee-filter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Employees</option>
                 @foreach($employees as $employee)
                     <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                 @endforeach
             </select>
-            <button wire:click="create" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <button wire:click="create" data-testid="leave-create-button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
@@ -122,6 +123,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     <button wire:click="view({{ $leave->id }})" 
+                                            data-testid="leave-view-{{ $leave->id }}"
                                             class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -130,6 +132,7 @@
                                     </button>
                                     @if($leave->status === 'Pending')
                                         <button wire:click="approve({{ $leave->id }})" 
+                                                data-testid="leave-approve-{{ $leave->id }}"
                                                 class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                                 title="Approve Leave">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,6 +140,7 @@
                                             </svg>
                                         </button>
                                         <button wire:click="reject({{ $leave->id }})" 
+                                                data-testid="leave-reject-{{ $leave->id }}"
                                                 class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                 title="Reject Leave">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,6 +149,7 @@
                                         </button>
                                     @endif
                                     <button wire:click="edit({{ $leave->id }})" 
+                                            data-testid="leave-edit-{{ $leave->id }}"
                                             class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                             title="Edit Leave">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,7 +263,7 @@
                         <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="mb-4">
                                 <label for="employee_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee</label>
-                                <select wire:model="employee_id" id="employee_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="employee_id" id="employee_id" data-testid="leave-employee-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Select Employee</option>
                                     @foreach($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->employee_id }})</option>
@@ -268,7 +273,7 @@
                             </div>
                             <div class="mb-4">
                                 <label for="leave_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Leave Type</label>
-                                <select wire:model="leave_type" id="leave_type" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="leave_type" id="leave_type" data-testid="leave-type-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Select Leave Type</option>
                                     @foreach($leaveTypes as $type)
                                         <option value="{{ $type }}">{{ $type }}</option>
@@ -279,28 +284,28 @@
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
-                                    <input type="date" wire:model="start_date" id="start_date" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <input type="date" wire:model="start_date" id="start_date" data-testid="leave-start-date-input" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     @error('start_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
-                                    <input type="date" wire:model="end_date" id="end_date" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <input type="date" wire:model="end_date" id="end_date" data-testid="leave-end-date-input" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     @error('end_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="mb-4">
                                 <label for="duration_in_days" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (Days)</label>
-                                <input type="number" wire:model="duration_in_days" id="duration_in_days" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <input type="number" wire:model="duration_in_days" id="duration_in_days" data-testid="leave-duration-input" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 @error('duration_in_days') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reason</label>
-                                <textarea wire:model="reason" id="reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                <textarea wire:model="reason" id="reason" data-testid="leave-reason-input" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                                 @error('reason') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="status" id="status" data-testid="leave-status-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="Pending">Pending</option>
                                     <option value="Approved">Approved</option>
                                     <option value="Rejected">Rejected</option>
@@ -309,15 +314,15 @@
                             </div>
                             <div class="mb-4">
                                 <label for="approver_comment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Approver Comment</label>
-                                <textarea wire:model="approver_comment" id="approver_comment" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                <textarea wire:model="approver_comment" id="approver_comment" data-testid="leave-approver-comment-input" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                                 @error('approver_comment') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="submit" data-testid="leave-save-button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                                 Save
                             </button>
-                            <button type="button" wire:click="closeCreateModal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" wire:click="closeCreateModal" data-testid="leave-cancel-button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>
@@ -338,7 +343,7 @@
                         <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="mb-4">
                                 <label for="edit_employee_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee</label>
-                                <select wire:model="employee_id" id="edit_employee_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="employee_id" id="edit_employee_id" data-testid="leave-edit-employee-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Select Employee</option>
                                     @foreach($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->employee_id }})</option>
@@ -348,7 +353,7 @@
                             </div>
                             <div class="mb-4">
                                 <label for="edit_leave_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Leave Type</label>
-                                <select wire:model="leave_type" id="edit_leave_type" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="leave_type" id="edit_leave_type" data-testid="leave-edit-type-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Select Leave Type</option>
                                     @foreach($leaveTypes as $type)
                                         <option value="{{ $type }}">{{ $type }}</option>
@@ -359,28 +364,28 @@
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label for="edit_start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
-                                    <input type="date" wire:model="start_date" id="edit_start_date" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <input type="date" wire:model="start_date" id="edit_start_date" data-testid="leave-edit-start-date-input" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     @error('start_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label for="edit_end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
-                                    <input type="date" wire:model="end_date" id="edit_end_date" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <input type="date" wire:model="end_date" id="edit_end_date" data-testid="leave-edit-end-date-input" wire:change="calculateDuration" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     @error('end_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="mb-4">
                                 <label for="edit_duration_in_days" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (Days)</label>
-                                <input type="number" wire:model="duration_in_days" id="edit_duration_in_days" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <input type="number" wire:model="duration_in_days" id="edit_duration_in_days" data-testid="leave-edit-duration-input" step="0.5" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 @error('duration_in_days') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="edit_reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reason</label>
-                                <textarea wire:model="reason" id="edit_reason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                <textarea wire:model="reason" id="edit_reason" data-testid="leave-edit-reason-input" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                                 @error('reason') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="edit_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model="status" id="edit_status" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <select wire:model="status" id="edit_status" data-testid="leave-edit-status-input" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="Pending">Pending</option>
                                     <option value="Approved">Approved</option>
                                     <option value="Rejected">Rejected</option>
@@ -389,15 +394,15 @@
                             </div>
                             <div class="mb-4">
                                 <label for="edit_approver_comment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Approver Comment</label>
-                                <textarea wire:model="approver_comment" id="edit_approver_comment" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                <textarea wire:model="approver_comment" id="edit_approver_comment" data-testid="leave-edit-approver-comment-input" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                                 @error('approver_comment') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="submit" data-testid="leave-update-button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                                 Update
                             </button>
-                            <button type="button" wire:click="closeEditModal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" wire:click="closeEditModal" data-testid="leave-edit-cancel-button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>
