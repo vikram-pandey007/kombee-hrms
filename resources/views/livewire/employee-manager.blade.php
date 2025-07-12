@@ -1,7 +1,25 @@
-<div>
+<div wire:poll.10s>
     @if (session()->has('message'))
-        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative success-message" role="alert" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
             <span class="block sm:inline">{{ session('message') }}</span>
+            <button @click="show = false" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative error-message" role="alert" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <span class="block sm:inline">{{ session('error') }}</span>
+            <button @click="show = false" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <title>Close</title>
+                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+            </button>
         </div>
     @endif
 
@@ -22,13 +40,13 @@
             <select wire:model.live="departmentFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Departments</option>
                 @foreach($departments as $dept)
-                    <option value="{{ $dept }}">{{ $dept }}</option>
+                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                 @endforeach
             </select>
             <select wire:model.live="designationFilter" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="">All Designations</option>
                 @foreach($designations as $designation)
-                    <option value="{{ $designation }}">{{ $designation }}</option>
+                    <option value="{{ $designation->id }}">{{ $designation->name }}</option>
                 @endforeach
             </select>
             <button wire:click="create" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -75,8 +93,8 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $employee->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $employee->department }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $employee->designation }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $employee->department_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $employee->designation_name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     @if($employee->status === 'Active') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
@@ -87,13 +105,15 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     <button wire:click="edit({{ $employee->id }})" 
-                                            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                            title="Edit Employee">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
                                     <button wire:click="toggleStatus({{ $employee->id }})" 
-                                            class="text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-600 hover:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-900 dark:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-400 dark:hover:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-300">
+                                            class="text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-600 hover:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-900 dark:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-400 dark:hover:text-{{ $employee->status === 'Active' ? 'red' : 'green' }}-300"
+                                            title="{{ $employee->status === 'Active' ? 'Deactivate' : 'Activate' }} Employee">
                                         @if($employee->status === 'Active')
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
@@ -144,49 +164,60 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form wire:submit="save">
+                    <form wire:submit="save" wire:loading.class="opacity-50">
                         <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="mb-4">
                                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                                <input type="text" wire:model="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="text" wire:model="name" id="name" class="mt-1 block w-full rounded-md @error('name') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm" placeholder="Enter employee name">
+                                @error('name') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                                <input type="email" wire:model="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="email" wire:model="email" id="email" class="mt-1 block w-full rounded-md @error('email') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm" placeholder="Enter email address">
+                                @error('email') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
-                                <input type="text" wire:model="phone" id="phone" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('phone') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="text" wire:model="phone" id="phone" class="mt-1 block w-full rounded-md @error('phone') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm" placeholder="Enter phone number (optional)">
+                                @error('phone') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
-                                <label for="department" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
-                                <input type="text" wire:model="department" id="department" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('department') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <label for="department_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+                                <select wire:model="department_id" id="department_id" class="mt-1 block w-full rounded-md @error('department_id') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm">
+                                    <option value="">Select Department</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('department_id') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
-                                <label for="designation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Designation</label>
-                                <input type="text" wire:model="designation" id="designation" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('designation') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <label for="designation_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Designation</label>
+                                <select wire:model="designation_id" id="designation_id" class="mt-1 block w-full rounded-md @error('designation_id') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm">
+                                    <option value="">Select Designation</option>
+                                    @foreach($designations as $designation)
+                                        <option value="{{ $designation->id }}">{{ $designation->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('designation_id') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="joining_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Joining Date</label>
-                                <input type="date" wire:model="joining_date" id="joining_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('joining_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="date" wire:model="joining_date" id="joining_date" class="mt-1 block w-full rounded-md @error('joining_date') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm">
+                                @error('joining_date') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="fixed_salary" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fixed Salary</label>
-                                <input type="number" wire:model="fixed_salary" id="fixed_salary" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('fixed_salary') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="number" wire:model="fixed_salary" id="fixed_salary" step="0.01" min="0" class="mt-1 block w-full rounded-md @error('fixed_salary') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm" placeholder="Enter salary amount">
+                                @error('fixed_salary') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                Save
+                            <button type="submit" wire:loading.attr="disabled" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+                                <span wire:loading.remove>Save</span>
+                                <span wire:loading>Saving...</span>
                             </button>
-                            <button type="button" wire:click="$set('showCreateModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" wire:click="closeCreateModal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>
@@ -207,8 +238,8 @@
                         <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="mb-4">
                                 <label for="edit_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                                <input type="text" wire:model="name" id="edit_name" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <input type="text" wire:model="name" id="edit_name" class="mt-1 block w-full rounded-md @error('name') border-red-300 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 @endif dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm sm:text-sm" placeholder="Enter employee name">
+                                @error('name') <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="edit_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
@@ -221,14 +252,24 @@
                                 @error('phone') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
-                                <label for="edit_department" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
-                                <input type="text" wire:model="department" id="edit_department" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('department') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <label for="edit_department_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
+                                <select wire:model="department_id" id="edit_department_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Select Department</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('department_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
-                                <label for="edit_designation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Designation</label>
-                                <input type="text" wire:model="designation" id="edit_designation" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('designation') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                <label for="edit_designation_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Designation</label>
+                                <select wire:model="designation_id" id="edit_designation_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Select Designation</option>
+                                    @foreach($designations as $designation)
+                                        <option value="{{ $designation->id }}">{{ $designation->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('designation_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-4">
                                 <label for="edit_joining_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Joining Date</label>
@@ -245,7 +286,7 @@
                             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                                 Update
                             </button>
-                            <button type="button" wire:click="$set('showEditModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" wire:click="closeEditModal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>
@@ -254,4 +295,29 @@
             </div>
         </div>
     @endif
+
+    <!-- Event Listeners for State Management -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('employee-created', () => {
+                // Refresh the component after employee creation
+                Livewire.dispatch('$refresh');
+            });
+
+            Livewire.on('employee-updated', () => {
+                // Refresh the component after employee update
+                Livewire.dispatch('$refresh');
+            });
+
+            Livewire.on('employee-deleted', () => {
+                // Refresh the component after employee deletion
+                Livewire.dispatch('$refresh');
+            });
+
+            Livewire.on('employee-status-updated', () => {
+                // Refresh the component after status update
+                Livewire.dispatch('$refresh');
+            });
+        });
+    </script>
 </div>

@@ -3,7 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Employee;
+use App\Models\Department;
+use App\Models\Designation;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Livewire\Component;
 use Livewire\Attributes\Rule;
@@ -21,20 +24,19 @@ class EmployeeManager extends Component
     public string $designationFilter = '';
 
     // Form properties
-    #[Rule('required|min:3')]
     public string $name = '';
-    #[Rule('required|email')]
     public string $email = '';
-    #[Rule('nullable|string')]
     public string $phone = '';
-    #[Rule('required|string')]
-    public string $department = '';
-    #[Rule('required|string')]
-    public string $designation = '';
-    #[Rule('required|date')]
+    public string $department_id = '';
+    public string $designation_id = '';
     public string $joining_date = '';
-    #[Rule('required|numeric')]
     public string $fixed_salary = '';
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'departmentFilter' => ['except' => ''],
+        'designationFilter' => ['except' => ''],
+    ];
 
     public function mount()
     {
@@ -43,105 +45,251 @@ class EmployeeManager extends Component
 
     public function generateEmployeeId()
     {
-        $lastEmployee = Employee::latest()->first();
-        $lastId = $lastEmployee ? intval(substr($lastEmployee->employee_id, 4)) : 0;
-        return 'EMP-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
+        try {
+            // Use database transaction to ensure atomicity
+            return DB::transaction(function () {
+                $lastEmployee = Employee::orderBy('id', 'desc')->first();
+
+                if (!$lastEmployee) {
+                    return 'EMP-0001';
+                }
+
+                // Extract the numeric part and increment
+                $lastNumber = (int) substr($lastEmployee->employee_id, 4);
+                $newNumber = $lastNumber + 1;
+
+                return 'EMP-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            });
+        } catch (\Exception $e) {
+            Log::error('Error generating employee ID: ' . $e->getMessage());
+            throw new \Exception('Failed to generate employee ID. Please try again.');
+        }
     }
 
     public function create()
     {
         $this->resetValidation();
-        $this->reset();
+        $this->reset(['name', 'email', 'phone', 'department_id', 'designation_id', 'joining_date', 'fixed_salary']);
         $this->showCreateModal = true;
     }
 
     public function save()
     {
-        $this->validate();
+        // Reset validation first
+        $this->resetValidation();
 
-        Employee::create([
-            'employee_id' => $this->generateEmployeeId(),
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'department' => $this->department,
-            'designation' => $this->designation,
-            'joining_date' => $this->joining_date,
-            'fixed_salary' => $this->fixed_salary,
-            'status' => 'Active',
-        ]);
+        try {
+            // Validate the data
+            $this->validate(Employee::rules(), Employee::messages());
 
-        $this->showCreateModal = false;
-        $this->reset();
-        session()->flash('message', 'Employee created successfully.');
+            // If validation passes, create the employee
+            DB::transaction(function () {
+                Employee::create([
+                    'employee_id' => $this->generateEmployeeId(),
+                    'name' => trim($this->name),
+                    'email' => trim($this->email),
+                    'phone' => trim($this->phone),
+                    'department_id' => $this->department_id,
+                    'designation_id' => $this->designation_id,
+                    'joining_date' => $this->joining_date,
+                    'fixed_salary' => $this->fixed_salary,
+                    'status' => 'Active',
+                ]);
+            });
+
+            $this->showCreateModal = false;
+            $this->reset(['name', 'email', 'phone', 'department_id', 'designation_id', 'joining_date', 'fixed_salary']);
+            session()->flash('message', 'Employee created successfully.');
+
+            // Force refresh the component
+            $this->dispatch('employee-created');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors for debugging
+            Log::info('Validation failed for employee creation: ' . json_encode($e->errors()));
+            // Re-throw the validation exception so Livewire can handle it
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error creating employee: ' . $e->getMessage());
+            session()->flash('error', 'Failed to create employee: ' . $e->getMessage());
+        }
     }
 
     public function edit($id)
     {
-        $this->resetValidation();
-        $employee = Employee::findOrFail($id);
+        try {
+            $this->resetValidation();
+            $employee = Employee::findOrFail($id);
 
-        $this->editingEmployeeId = $employee->id;
-        $this->name = $employee->name;
-        $this->email = $employee->email;
-        $this->phone = $employee->phone;
-        $this->department = $employee->department;
-        $this->designation = $employee->designation;
-        $this->joining_date = $employee->joining_date;
-        $this->fixed_salary = $employee->fixed_salary;
+            $this->editingEmployeeId = $employee->id;
+            $this->name = $employee->name;
+            $this->email = $employee->email;
+            $this->phone = $employee->phone ?? '';
+            $this->department_id = $employee->department_id;
+            $this->designation_id = $employee->designation_id;
+            $this->joining_date = $employee->joining_date->format('Y-m-d');
+            $this->fixed_salary = $employee->fixed_salary;
 
-        $this->showEditModal = true;
+            $this->showEditModal = true;
+        } catch (\Exception $e) {
+            Log::error('Error editing employee: ' . $e->getMessage());
+            session()->flash('error', 'Failed to load employee data. Please try again.');
+        }
     }
 
     public function update()
     {
-        $this->validate();
+        // Reset validation first
+        $this->resetValidation();
 
-        $employee = Employee::findOrFail($this->editingEmployeeId);
-        $employee->update([
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'department' => $this->department,
-            'designation' => $this->designation,
-            'joining_date' => $this->joining_date,
-            'fixed_salary' => $this->fixed_salary,
-        ]);
+        try {
+            // Validate the data
+            $this->validate(Employee::rules($this->editingEmployeeId), Employee::messages());
 
-        $this->showEditModal = false;
-        $this->reset();
-        session()->flash('message', 'Employee updated successfully.');
+            // If validation passes, update the employee
+            DB::transaction(function () {
+                $employee = Employee::findOrFail($this->editingEmployeeId);
+                $employee->update([
+                    'name' => trim($this->name),
+                    'email' => trim($this->email),
+                    'phone' => trim($this->phone),
+                    'department_id' => $this->department_id,
+                    'designation_id' => $this->designation_id,
+                    'joining_date' => $this->joining_date,
+                    'fixed_salary' => $this->fixed_salary,
+                ]);
+            });
+
+            $this->showEditModal = false;
+            $this->reset(['name', 'email', 'phone', 'department_id', 'designation_id', 'joining_date', 'fixed_salary', 'editingEmployeeId']);
+            session()->flash('message', 'Employee updated successfully.');
+
+            // Force refresh the component
+            $this->dispatch('employee-updated');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors for debugging
+            Log::info('Validation failed for employee update: ' . json_encode($e->errors()));
+            // Re-throw the validation exception so Livewire can handle it
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error updating employee: ' . $e->getMessage());
+            session()->flash('error', 'Failed to update employee. Please try again.');
+        }
     }
 
     public function toggleStatus($id)
     {
-        $employee = Employee::findOrFail($id);
-        $employee->status = $employee->status === 'Active' ? 'Inactive' : 'Active';
-        $employee->save();
-        session()->flash('message', 'Employee status updated successfully.');
+        try {
+            DB::transaction(function () use ($id) {
+                $employee = Employee::findOrFail($id);
+                $employee->status = $employee->status === 'Active' ? 'Inactive' : 'Active';
+                $employee->save();
+            });
+
+            session()->flash('message', 'Employee status updated successfully.');
+
+            // Force refresh the component
+            $this->dispatch('employee-status-updated');
+        } catch (\Exception $e) {
+            Log::error('Error toggling employee status: ' . $e->getMessage());
+            session()->flash('error', 'Failed to update employee status. Please try again.');
+        }
+    }
+
+    // public function delete($id)
+    // {
+    //     try {
+    //         DB::transaction(function () use ($id) {
+    //             $employee = Employee::findOrFail($id);
+
+    //             // Check if employee has related records
+    //             $leaveCount = $employee->leaves()->count();
+    //             $payrollCount = $employee->payrolls()->count();
+
+    //             if ($leaveCount > 0 || $payrollCount > 0) {
+    //                 $message = 'Cannot delete employee with existing records: ';
+    //                 $issues = [];
+    //                 if ($leaveCount > 0) $issues[] = "{$leaveCount} leave record(s)";
+    //                 if ($payrollCount > 0) $issues[] = "{$payrollCount} payroll record(s)";
+    //                 $message .= implode(', ', $issues) . '. Please delete these records first.';
+    //                 throw new \Exception($message);
+    //             }
+
+    //             $employee->delete();
+    //         });
+
+    //         session()->flash('message', 'Employee deleted successfully.');
+
+    //         // Force refresh the component and reset pagination
+    //         $this->resetPage();
+    //         $this->dispatch('employee-deleted');
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Error deleting employee: ' . $e->getMessage());
+    //         session()->flash('error', $e->getMessage());
+    //     }
+    // }
+
+    public function closeCreateModal()
+    {
+        $this->showCreateModal = false;
+        $this->resetValidation();
+        $this->reset(['name', 'email', 'phone', 'department_id', 'designation_id', 'joining_date', 'fixed_salary']);
+    }
+
+    public function closeEditModal()
+    {
+        $this->showEditModal = false;
+        $this->resetValidation();
+        $this->reset(['name', 'email', 'phone', 'department_id', 'designation_id', 'joining_date', 'fixed_salary', 'editingEmployeeId']);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDepartmentFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDesignationFilter()
+    {
+        $this->resetPage();
     }
 
     public function render()
     {
-        $query = Employee::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('employee_id', 'like', '%' . $this->search . '%');
+        try {
+            $query = Employee::with(['department', 'designation'])
+                ->when($this->search, function ($query) {
+                    $query->where(function ($q) {
+                        $q->where('name', 'like', '%' . $this->search . '%')
+                            ->orWhere('email', 'like', '%' . $this->search . '%')
+                            ->orWhere('employee_id', 'like', '%' . $this->search . '%');
+                    });
+                })
+                ->when($this->departmentFilter, function ($query) {
+                    $query->where('department_id', $this->departmentFilter);
+                })
+                ->when($this->designationFilter, function ($query) {
+                    $query->where('designation_id', $this->designationFilter);
                 });
-            })
-            ->when($this->departmentFilter, function ($query) {
-                $query->where('department', $this->departmentFilter);
-            })
-            ->when($this->designationFilter, function ($query) {
-                $query->where('designation', $this->designationFilter);
-            });
 
-        return view('livewire.employee-manager', [
-            'employees' => $query->latest()->paginate(10),
-            'departments' => Employee::distinct()->pluck('department'),
-            'designations' => Employee::distinct()->pluck('designation')
-        ]);
+            return view('livewire.employee-manager', [
+                'employees' => $query->latest()->paginate(10),
+                'departments' => Department::active()->get(),
+                'designations' => Designation::active()->get()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error rendering employee manager: ' . $e->getMessage());
+            session()->flash('error', 'Failed to load employee data. Please refresh the page.');
+
+            return view('livewire.employee-manager', [
+                'employees' => collect([])->paginate(10),
+                'departments' => collect([]),
+                'designations' => collect([])
+            ]);
+        }
     }
 }
